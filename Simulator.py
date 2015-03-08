@@ -122,16 +122,15 @@ class Simulator(object):
 def tick(i):
     return sim.tick()
 
-FPS = 30 # hardcoded into simulation assumptions
-
-world = World(100, 100)
-sim = Simulator(world, 10, FPS, "images")
-
 # simulator assumes its physics simulation is running at dt = 1/30 s
 # would have to recalculate the true animation framerate (to get physically accurate speeds, etc)
 # if you change the raw sample rate of the animator function (which accepts arguments in ms)
+FPS = 30 # hardcoded into simulation assumptions
 simlen = 10 # sec
 frames = FPS * simlen
+
+world = World(100, 100)
+sim = Simulator(world, simlen, FPS, "images")
 
 ani = animation.FuncAnimation(sim.fig, tick, frames=frames, blit=True, init_func=sim.setup)
 
