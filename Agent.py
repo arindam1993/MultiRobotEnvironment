@@ -148,7 +148,7 @@ class Agent(object):
                     enemyTeam.append(agentToAppend)
         for ball in world.balls:
             ballToAppend = Ball(self.getEgoCentricOf(ball))
-            ballToAppend.setUID(ball.uid)
+            ballToAppend.uid = ball.uid
             balls.append(ballToAppend)
         for obstacle in world.obstacles:
             obstacleToAppend = Obstacle(self.getEgoCentricOf(obstacle), obstacle.radius)

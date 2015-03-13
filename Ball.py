@@ -98,12 +98,5 @@ class Ball(object):
         directionNorm = normalize(direction)
         if self.isDynamic:
             self.velocity = directionNorm * intensity
-        
-    def getUID(self):
-        return self.uid
-    
-    def setUID(self, uid):
-        self.uid = uid
-        
-    
+
     
