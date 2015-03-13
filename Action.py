@@ -17,7 +17,7 @@ class Stun(object):
         Constructor
         '''
         self.agentToStun = agent
-        self.agentUID = agent.getUID()
+        self.agentUID = agent.uid
         self.duration = duration
         
         

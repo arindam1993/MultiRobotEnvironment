@@ -9,15 +9,19 @@ authors: Arindam Bose (arindam.1993@gmail.com), Tucker Balch (trbalch@gmail.com)
 from numpy import *
 import numpy as np
 
+from math import sin, cos, radians
 def rotMatrixFromYPR(rotation):
-    a = math.radians(rotation[0])
-    b = math.radians(rotation[1])
-    c = math.radians(rotation[2])
+    a = radians(rotation[0])
+    b = radians(rotation[1])
+    c = radians(rotation[2])
+
+    co = [cos(a),cos(b),cos(c)]
+    si = [sin(a),sin(b),sin(c)]    
+
     rotMat = array([
-                    [math.cos(a)*math.cos(b), math.cos(a)*math.sin(b)*math.sin(c) - math.sin(a)*math.cos(c), math.cos(a)*math.sin(b)*math.cos(c) + math.sin(a)*math.sin(c)],
-                    [math.sin(a)*math.cos(b), math.sin(a)*math.sin(b)*math.sin(c) + math.cos(a)*math.cos(c), math.sin(a)*math.sin(b)*math.cos(c) - math.cos(a)*math.sin(c)],
-                    [-math.sin(b), math.cos(b)*math.sin(c), math.cos(b)*math.cos(c)]])
-    rotMat = transpose(rotMat)
+                    [co[0]*co[1], si[0]*co[1], -si[1]],
+                    [co[0]*si[1]*si[2] - si[0]*co[2], si[0]*si[1]*si[2] + co[0]*co[2], co[1]*si[2]],
+                    [co[0]*si[1]*co[2] + si[0]*si[2], si[0]*si[1]*co[2] - co[0]*si[2], co[1]*co[2]]])
     return rotMat
 
 def getYPRFromVector(vector):

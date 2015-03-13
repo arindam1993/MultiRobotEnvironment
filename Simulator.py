@@ -18,6 +18,7 @@ from LinearAlegebraUtils import distBetween
 from RunAtBallBrain import RunAtBallBrain
 from Team import Team
 from SimTime import SimTime
+from PIL import Image
 
 
 
@@ -149,19 +150,32 @@ class Simulator(object):
         fname = self.imageDirName + '/' + str(int(100000000+loopIndex)) + '.png' # name the file 
         self.loop(ax)
         plt.gca().set_ylim(ax.get_ylim()[::-1])
-        savefig(fname, format='png', bbox_inches='tight')
-        print 'Written Frame No.'+ str(loopIndex)+' to '+ fname
+#        savefig(fname, format='png', bbox_inches='tight')
+#        print 'Written Frame No.'+ str(loopIndex)+' to '+ fname
+#        plt.close()
+        
+        # draw the renderer
+        fig.canvas.draw()
+        # Get the RGBA buffer from the figure
+        w,h = fig.canvas.get_width_height()
+        buf = np.fromstring ( fig.canvas.tostring_argb(), dtype=np.uint8 )
         plt.close()
+        buf.shape = ( w, h,4 )
+     
+        # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
+        buf = np.roll( buf, 3, axis = 2 )#(161,96)(1150,862)
+        img = Image.fromstring( "RGBA", ( w ,h ), buf.tostring() )
+        img.crop((220, 116, 1150, 862)).save(fname)
+        print 'Written Frame No.'+ str(loopIndex)+' to '+ fname
 
 
 #Simulation runs here
 #set the size of the world
 world = World(100, 100)
 #specify which world to simulate, total simulation time, and frammerate for video
-sim = Simulator(world, 120, 30, "images")
+sim = Simulator(world, 1, 30, "images")
 #run the simulation
 sim.run()
-
 '''
 To create a video using the image sequence, execute the following command in command line.
 >ffmpeg -framerate 30 -i "1%08d.png" -r 30 outPut.mp4
