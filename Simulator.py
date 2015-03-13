@@ -19,6 +19,7 @@ from RunAtBallBrain import RunAtBallBrain
 from Team import Team
 from SimTime import SimTime
 from PIL import Image
+import time
 
 
 
@@ -37,6 +38,7 @@ class Simulator(object):
         self.imageDirName = imageDirName
         self.currWP = 0
         self.ballWPs = [array([50.0, -100.0, 0.0]), array([0.0, 100.0, -70.0]), array([50.0, 20.0, 100.0]),array([-30.0, 50.0, -100.0]), array([80.0, -50.0, 50.0]), array([80.0, -50.0, -50.0]), array([-65.0, 20.0, 50.0]), array([-50.0, 20.0, -60.0])]
+        self.ps = []
 
     def setup(self):    
         #setup directory to save the images
@@ -137,6 +139,8 @@ class Simulator(object):
             physicsIndex+=1
             currTime+=double(timeStep)
      
+        for p in self.ps:
+            p.join()
         print "Physics ran for "+str(physicsIndex)+" steps"
         print "Drawing ran for "+str(drawIndex)+" steps"
             
@@ -150,10 +154,6 @@ class Simulator(object):
         fname = self.imageDirName + '/' + str(int(100000000+loopIndex)) + '.png' # name the file 
         self.loop(ax)
         plt.gca().set_ylim(ax.get_ylim()[::-1])
-#        savefig(fname, format='png', bbox_inches='tight')
-#        print 'Written Frame No.'+ str(loopIndex)+' to '+ fname
-#        plt.close()
-        
         # draw the renderer
         fig.canvas.draw()
         # Get the RGBA buffer from the figure
@@ -161,27 +161,28 @@ class Simulator(object):
         buf = np.fromstring ( fig.canvas.tostring_argb(), dtype=np.uint8 )
         plt.close()
         buf.shape = ( w, h,4 )
-     
         # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
         buf = np.roll( buf, 3, axis = 2 )#(161,96)(1150,862)
         img = Image.fromstring( "RGBA", ( w ,h ), buf.tostring() )
         img.crop((220, 116, 1150, 862)).save(fname)
         print 'Written Frame No.'+ str(loopIndex)+' to '+ fname
 
-
-#Simulation runs here
-#set the size of the world
-world = World(100, 100)
-#specify which world to simulate, total simulation time, and frammerate for video
-sim = Simulator(world, 1, 30, "images")
-#run the simulation
-sim.run()
-'''
-To create a video using the image sequence, execute the following command in command line.
->ffmpeg -framerate 30 -i "1%08d.png" -r 30 outPut.mp4
-                    ^                    ^
-                Framerate mtached with simulator
-Make sure to set your current working directory to /images and have ffmpeg in your path.
-'''
-
+if __name__=='__main__':
+    start_time = time.time()
+    #Simulation runs here
+    #set the size of the world
+    world = World(100, 100)
+    #specify which world to simulate, total simulation time, and frammerate for video
+    sim = Simulator(world, 1, 30, "images")
+    #run the simulation
+    sim.run()
+    print 'The program ran for {} seconds'.format(time.time()-start_time)
+    '''
+    To create a video using the image sequence, execute the following command in command line.
+    >ffmpeg -framerate 30 -i "1%08d.png" -r 30 outPut.mp4
+                        ^                    ^
+                    Framerate mtached with simulator
+    Make sure to set your current working directory to /images and have ffmpeg in your path.
+    '''
     
+        
