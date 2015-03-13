@@ -17,7 +17,7 @@ class Stun(object):
         Constructor
         '''
         self.agentToStun = agent
-        self.agentUID = agent.getUID()
+        self.agentUID = agent.uid
         self.duration = duration
         
         
@@ -25,7 +25,7 @@ class Kick(object):
     
     def __init__(self, ball, direction, intensity):
         self.ball = ball
-        self.ballUID = ball.getUID()
+        self.ballUID = ball.uid
         self.direction = direction
         self.intensity = intensity
         

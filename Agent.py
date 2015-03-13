@@ -26,11 +26,12 @@ class Agent(object):
     def __init__(self, team, position, rotation, brain, colRadius, drawRadius):
         self.position = position.astype(float)        #numpy array [x, y ,z]
         self.rotation = rotation.astype(float)        #numpy array [yaw, pitch, roll] (in degrees)
+        self.rotMatrix = rotMatrixFromYPR(self.rotation)
         self.colRadius = colRadius      #float size of collision sphere
         self.drawRadius = drawRadius    #float size of sphere to be drawn
         self.team = team                #provide team 'A' or team 'B'
-        self.forward = dot(array([1, 0, 0]), rotMatrixFromYPR(rotation))    #unit vector in forward direction of agent
-        self.right = dot(array([0, 1, 0]), rotMatrixFromYPR(rotation))      #unit vector in right direction of agent
+        self.forward = dot(array([1, 0, 0]), self.rotMatrix)    #unit vector in forward direction of agent
+        self.right = dot(array([0, 1, 0]), self.rotMatrix)      #unit vector in right direction of agent
         self.up = cross(self.forward, self.right)       #unit vector pointing upwards
         self.maxMove = double(0.6666)             #max distance the agent can move in each frame
         self.maxRot = array([5, 5, 5])           #max YPR in degrees the agent can rotate in each frame
@@ -87,12 +88,7 @@ class Agent(object):
     Returns egocentric position of other object with respect to self
     '''
     def getEgoCentricOf(self, otherObject):
-        otherPosition = otherObject.position;
-        rotMat = rotMatrixFromYPR(self.rotation)
-        rotMatInverse = inv(rotMat)
-        posVector = otherPosition - self.position
-        egoCentric = dot(posVector, rotMatInverse)
-        return egoCentric
+        return dot(otherObject.position - self.position, inv(self.rotMatrix))
     
     '''
     Moves the agent, given information about the world, places restrictions on motion, called by the simulator.
@@ -112,13 +108,13 @@ class Agent(object):
                 #handle stun action
                 if action.__class__.__name__ == 'Stun':
                     for agent in world.agents:
-                        if agent.getUID() == action.agentUID:
+                        if agent.uid == action.agentUID:
                             if distBetween(self.position, agent.position) < self.stunRange:
                                 agent.stun(action.duration)
                 #handle kick action
                 if action.__class__.__name__ == 'Kick':
                     for ball in world.balls:
-                        if ball.getUID() == action.ballUID:
+                        if ball.uid == action.ballUID:
                             if distBetween(self.position, ball.position) < 20:
                                 globalDirection = dot(action.direction, rotMatrixFromYPR(self.rotation))
                                 ball.kick(globalDirection, action.intensity)
@@ -141,15 +137,18 @@ class Agent(object):
         obstacles =[]
         for agent in world.agents:
             if agent != self:
-                agentToAppend = Agent(agent.team, self.getEgoCentricOf(agent), agent.rotation - self.rotation, agent.brain, agent.colRadius, agent.drawRadius)
-                agentToAppend.setUID(agent.getUID())
+                agentToAppend = LiteAgent(agent.team,
+                                            self.getEgoCentricOf(agent),
+                                            agent.rotation - self.rotation,
+                                            agent.colRadius, agent.drawRadius,
+                                            agent.uid)
                 if agent.team == self.team:
                     myTeam.append(agentToAppend)
                 else:
                     enemyTeam.append(agentToAppend)
         for ball in world.balls:
             ballToAppend = Ball(self.getEgoCentricOf(ball))
-            ballToAppend.setUID(ball.getUID())
+            ballToAppend.uid = ball.uid
             balls.append(ballToAppend)
         for obstacle in world.obstacles:
             obstacleToAppend = Obstacle(self.getEgoCentricOf(obstacle), obstacle.radius)
@@ -164,6 +163,7 @@ class Agent(object):
         if not self.isStunned:
             rotation = clampRotation(rotation, self.maxRot)
             self.rotation += rotation
+            self.rotMatrix = rotMatrixFromYPR(self.rotation)
             self.forward = normalize(dot(array([1, 0, 0]), rotMatrixFromYPR(self.rotation)))    
             self.right = normalize(dot(array([0, 1, 0]), rotMatrixFromYPR(self.rotation)))      
             self.up = normalize(cross(self.forward, self.right))
@@ -182,11 +182,14 @@ class Agent(object):
         self.isStunned = True
         self.lastStunned = SimTime.time
         self.stunDuration = duration
-        
-    def setUID(self, uid):
-        self.uid = uid
-    
-    def getUID(self):
-        return self.uid
 
-    
+
+class LiteAgent(object):
+    __slots__ = ['team', 'position', 'rotation', 'colRadius', 'drawRadius', 'uid','getUID']
+    def __init__(self, team, position, rotation, colRadius, drawRadius, uid):
+        self.team = team
+        self.position = position
+        self.rotation = rotation
+        self.colRadius = colRadius
+        self.drawRadius = drawRadius
+        self.uid = uid
