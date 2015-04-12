@@ -142,15 +142,15 @@ class Agent(object):
         balls = []
         obstacles =[]
         for agent in world.agents:
-            if agent != self:
-                agentToAppend = Agent(agent.team, self.getEgoCentricOf(agent), agent.rotation - self.rotation, agent.brain, agent.turnRate, agent.colRadius, agent.drawRadius)
-                agentToAppend.setUID(agent.getUID())
-                if agent.isStunned:
-                    agentToAppend.isStunned = True
-                if agent.team == self.team:
-                    myTeam.append(agentToAppend)
-                else:
-                    enemyTeam.append(agentToAppend)
+#            if agent != self:
+            agentToAppend = Agent(agent.team, self.getEgoCentricOf(agent), agent.rotation - self.rotation, agent.brain, agent.turnRate, agent.colRadius, agent.drawRadius)
+            agentToAppend.setUID(agent.getUID())
+            if agent.isStunned:
+                agentToAppend.isStunned = True
+            if agent.team == self.team:
+                myTeam.append(agentToAppend)
+            else:
+                enemyTeam.append(agentToAppend)
         for ball in world.balls:
             ballToAppend = Ball(self.getEgoCentricOf(ball))
             ballToAppend.setUID(ball.getUID())

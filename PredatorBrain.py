@@ -37,7 +37,13 @@ class PredatorBrain(object):
 
         movement = normalize(1.5*stunMovement + 0.5*avoidObstacleMovement + 0.5*avoidTeamMovement)
         deltaRot = getYPRFromVector(movement)
-        actions.append(Stun(nearestUnstunnedAgent, 5))
+        if distBetween(np.array([0, 0, 0]), nearestUnstunnedAgent.position) < nearestUnstunnedAgent.stunRange:
+            actions.append(Stun(nearestUnstunnedAgent, 5))
+ #           print "dist " + str(distBetween(np.array([0, 0, 0]), nearestUnstunnedAgent.position)) + " stunrange" + str(nearestUnstunnedAgent.stunRange)
+            for teammate in myTeam:
+                if((teammate.position==np.array([0.0, 0.0, 0.0])).all()):
+ #                   print "Predator stunning itself"
+                    actions.append(Stun(teammate, 1.25))
 
         return deltaPos, deltaRot, actions
 
